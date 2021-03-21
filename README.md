@@ -1,45 +1,53 @@
-# Project 2 - Ames Housing Data and Kaggle Challenge
+# Project 3 - iPhone VS Android : reddit posts classification
 
 
 ## Problem Statement
-Presently, one of my relatives is gaining interested in a real estate trading business. What she's currently doing is searching for second-hand houses/condominiums that worth renovating for resale. One of the problems she has is the valuation of the property since it is very subjective, and there are plenty of factors affecting its price.
-Therefore, **this project aims to study significant factors affecting the property value (which add the most value to a property and which hurt the price most?) and finally build a model that accurately predicts the property price in a timely manner. So we do not miss an opportunity to get undervalued properties and maximize our profit!**
+As a data scientist at Apple, I have discussed with product development teams and found out that they are currently processing the customer feedback only from the query from Apple official websites. They feel that reports collected from forums and feedback channels are mainly about serious malfunctions containing lots of technical stuff. However, they would like to get sentiment from non-technical users for further development i.e., 'I really love the new function in iOS 13.2.1', 'New version of Siri is fantastic!' for following purposes ...
+- to see whether the users love their new function or not?
+- Which aspect need improvement?
+- What do general users expect to see in the future?
 
-**List of model used in the project:**  
-1. Multiple Linear Regression
-1. Regularized Linear Regression in multiple variance
- - Ridge Regression
- - Lasso Regression
- - ElasticNet Regression
+To address their problem, I suggested the team to get non-technical comments from the reddit websites. Manual Collection seems to be a safe approach since I can directly go to 'iPhone' subreddit and read through each single posts. Nevertheless, it is extremely labor intensive and inefficient. So in this project, I'll build a classifier to automatically distinguish iPhone posts from other kind of smartphone posts and send them to product development teams.
+
+In the foreseeable future, I'll try to conduct a sentiment analysis on iPhone posts I got to separate positive and negative comment and hand it over to each responsible parties.
+The project will compares ...
+
+2 words to vectors converter (Vectorizers):
+1. CountVectorizer
+1. TfidfVectorizer
+
+and 3 classifiers:
+1. LogisticRegression
+1. Naive Bayes (Multinomial variance)
+1. KNearestNeighbors
+The candidate model must not only yield high accuracy, but it must also be highly interpretable
 
 **Evaluation metrics:**  
-For this occasion, **RMSE** (Square root of Mean Squared Error) will be used as an evaluation metrics
+For this occasion, **Accuracy** will be used as an evaluation metrics
 
 **Baseline performance:**  
-The performance of our model will be compared against the baseline model that make an average of property price as a prediction in every time.
+The performance of our model will be compared against the baseline performance (the ratio of the majority class)
 
 ## About the dataset
-The <a href = http://www.amstat.org/publications/jse/v19n3/decock.pdf > Ames Housing dataset </a>  was compiled by Dean De Cock for use in data science education. It's an incredible alternative for data scientists looking for a modernized and expanded version of the often cited Boston Housing dataset.
-
-The dataset contains 2051 observation of 80 features, describing specific characteristics of residential property in Ames, Iowa sold between 2006 - 2010.  Of the 80 features, it can be separated into 4 main categories as follow
-- Features of the house --> a string describing main features such as roof material, mansory type, electrical system  
-- Area-Size related --> 1st floor and 2nd floor area, lot area, pool area, garage area  
-- Location of the house, neighborhood...
-- Surrounding Environmental Factor --> alley, landslope
-
-<a href = https://github.com/Joeycooky/DSI_Project_2/blob/main/data_dict.md > See full data dictionary here </a>
+Data will be collected using reddit api with "r/android" and "r/iphone" endpoints.
+Detailed data collection scripts are located in separated .py files named **'get_android.py' and 'get_iphone.py'**.
+Below code block is a snippet from one of the mentioned file
 
 ## Executive Summary
 
-![Overall](https://github.com/Joeycooky/DSI_Project_2/blob/main/images/coef_overall.png)
+Thanks to the data pulled from reddit API, we discovered the preliminary insight since our Exploratory Data Analysis section that post containing comment about two giant smartphone operating systems (and also major manufacturers) have their own characteristics such as
 
-Among all models in our study, an ElasticNet regressor with polynomial has the best predictive performance (evaluated by RMSE). However, considering interpretability, the simpler version without polynomial transformation is much easier to interpret and be understood by non-technical user.
-Although numerous factors impacted the property value, some of the factors worth mentioning are ...
-- Although price tend to increase with the total area of the house, living area is the most expensive part of it.
-- From the perspective of property reseller, while overall quality directly means high resell price, we could consider buying an average quality house and focus on renovation to boost its price.
-- With a limited budget, focus on kitchen renovation and refurbishing external appearance by repainting.
-- If there is no garage, don't waste your time building one. It won't add much value to the house.
+- Obviously, the most frequent word in iPhone corpus is 'iPhone' itself, followed by apple and different iPhone models such as '12', 'pro', 'max'
+- The same fashion have also been observed for android phone. The most frequent word in Android corpus is 'Android' itself, followed by different smartphone manufacturers such as 'Samsung', 'Google' and their flagship model like 'Galaxy', 'Note', 'Pixel'
 
-for detailed analysis please go to ...
-1. <a href = https://github.com/Joeycooky/DSI_Project_2/blob/main/Code/EDA.ipynb > Exploratory Data Analysis </a>
-1. <a href = https://github.com/Joeycooky/DSI_Project_2/blob/main/Code/model_polyorder2.ipynb > Model, Prediction and Conclusion </a>
+![intersection](https://github.com/Joeycooky/DSI_Project_3/blob/main/images/intersection.png)
+
+It's hard to detect whether the post is about iPhone or Android by its simple features such as text length and title length. However, after develop and comparing several models, we can build a classifier with relatively high accuracy. The best among 6 models is the model with **TfidfVectorizer with LogisticRegression** in which it achieved 86% accuracy on the testing set.
+
+![ROC](https://github.com/Joeycooky/DSI_Project_3/blob/main/images/ROC.png)
+
+
+After iterating with different decision threshold, **the optimal value for our production is 0.7.** This threshold allow the model to filter out iPhone related posts with minimal number of android posts leaked in. Therefore allow our product development team to further work with the data with minimal difficulty. The output of the model (Cleaned dataset containing mostly iPhone related post) can be feed into a sentiment analysis algorithm to analyze the user feedback accordingly.
+
+![CM@0.5](https://github.com/Joeycooky/DSI_Project_3/blob/main/images/CM%400.5.png)
+![CM@0.7](https://github.com/Joeycooky/DSI_Project_3/blob/main/images/CM%400.7.png)
